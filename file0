@@ -1,0 +1,1932 @@
+aaaaaaaaaaaaaaaaaa图书馆aaaaaaaaaaaa
+#include<iostream>
+#include<iomanip>
+#include<windows.h>
+#include<conio.h>
+#include<string>
+using namespace std;
+const int Maxbor=10; //每位读者最多借10本书
+class Reader   //读者类
+{
+	int tag;
+	int num;
+	char mima[6];
+	char name[10];
+	int borbook[Maxbor];
+public:
+	Reader();
+	int getnum();
+	int gettag();
+	char* getname();
+	char*  getmima(); 
+	void setname(char na[]);
+	void delreader();
+	void addreader(int n,char *na,char* mi);
+	void borrowbook(int bookid);
+	int retbook(int bookid);
+	void disp();
+};
+    Reader：：reader（）{}
+char*Reader::getname() { return name; }
+int Reader::gettag() { return tag; } //获取删除标记
+int Reader::getnum() { return num; } //获取读者编号
+char * Reader::getmima(){ return mima;}//获取读者的密码
+void Reader::setname(char na[]) //设置姓名
+{
+	strcpy(name,na);
+}
+void Reader::delreader() { tag=1; } //删除读者
+void Reader::addreader(int n,char *na,char* mi) //增加读者
+{
+	tag=0;
+	num=n;
+	strcpy(name,na);
+    strcpy(mima,mi);
+	for (int i=0;i<Maxbor;i++)
+		borbook[i]=0;
+}
+void Reader::borrowbook(int bookid) //借书操作
+{
+	for (int i=0;i<Maxbor;i++)
+	{
+		if (borbook[i]==0)
+		{
+			borbook[i]=bookid;
+			return;
+		}
+	}
+}
+int Reader::retbook(int bookid)//还书操作
+{
+	for (int i=0;i<Maxbor;i++)
+	{
+		if (borbook[i]==bookid)
+		{
+			borbook[i]=0; 
+			return 1; 
+		}
+	}
+	return 0; 
+}
+void Reader::disp()//输出读者信息
+{
+	cout<<endl;
+	cout << setw(12) << num<< " 借书编号:[";
+	for (int i=0;i<Maxbor;i++)
+		if (borbook[i]!=0)
+			cout << borbook[i] << ";";
+		cout << "]" << endl;
+}
+class Book   //图书类
+{
+	int tag;
+	int num;
+	char name[10];
+	char writer[10];
+	char concem[30];
+	char Time[10];
+    float price;
+	int onshelf;
+public:
+	Book();
+	char *getname();
+	int getnum();
+	int getonshelf();
+	char *getwriter();
+	char *gettime();
+	char *getconcem();
+	float getprice();
+	int gettag(); 
+	void getTime(char time[]);
+	void setname(char na[]) ;
+	void delbook();
+	void addbook(int n,char *na, char *wri, char *con, char* tm,float pr); //增加图书
+    int borrowbook(); //借书操作
+	void retbook(); //还书操作
+	void disp(); //输出图书
+};Book::Book() {}
+char* Book::getname() { return name; } //获取姓名
+int Book::getonshelf(){return onshelf;}
+int Book::getnum() { return num; }//获取图书编号
+char*Book::getwriter() { return writer; }//获取书籍作者
+char*Book::getconcem() { return concem; }//获取书籍出版社
+char* Book::gettime() {return Time;}
+float Book::getprice() { return price; }//获取书籍价格
+int Book::gettag() { return tag; } //获取删除标记
+void Book::setname(char na[]) //设置书名
+{
+	strcpy(name,na);
+}
+void Book::getTime(char time[])
+{
+	strcpy(Time,time);
+}
+void Book::delbook() { tag=1; } //删除图书
+void Book::addbook(int n,char *na, char *wri, char *con, char* tm,float pr) //增加图书
+{
+	tag=0;
+	num=n;
+	strcpy(name,na);
+	strcpy(writer,wri);
+	strcpy(concem,con);
+	strcpy(Time,tm);
+	price=pr;
+	onshelf=1;
+}
+int Book::borrowbook() //借书操作
+{
+	if (onshelf==1)
+	{
+		onshelf=0;
+		return 1;
+	}
+	return 0;
+}
+
+void Book::retbook() //还书操作
+{
+	onshelf=1;
+}
+void Book::disp() //输出图书
+{
+	cout << setw(6) << num << setw(12) << name << setw(15)<<concem<<setw(10)<<writer<<setw(12)<<Time<<setw(6)<< (onshelf==1? "在架":"已借") << endl;
+}
+
+class BDatabase   //图书库类
+{
+	int top;
+	Book book[Maxb]; 
+public:
+	BDatabase();
+	void clear();
+	int addbook(int n,char *na, char *wri, char *con, char *tm,float pr);
+	Book *query(int bookid);
+	int BDatabase::qname(char* nm);
+	Book* BDatabase::Qname(char* nm);
+	int qzuozhe(char *wr);
+	Book* Qzuozhe(char *wr);
+	int qchuban(char *cb);
+	Book* Qchuban(char *cb); 
+	void bookdata(); 
+	~BDatabase();
+	void disp();
+};
+BDatabase::BDatabase() //构造函数,将book.txt读到book[]中
+{
+	Book b;
+	top=-1;
+	fstream file("d:\\book.txt",ios::in);
+	while (1)
+	{
+		file.read((char *)&b,sizeof(b));
+		if (!file) break;
+		top++;
+		book[top]=b;
+	}
+	file.close();
+}
+void BDatabase::clear() //全删
+{
+	top=-1;
+}
+int BDatabase::addbook(int n,char *na, char *wri, char *con,char *tm, float pr) //增加图书
+{
+	Book *p=query(n);
+	if (p==NULL)
+	{
+		top++;
+		book[top].addbook(n,na,wri,con,tm,pr);
+		return 1;
+	}
+	return 0;
+}
+Book* BDatabase::query(int bookid) //查找图书
+{
+	for (int i=0;i<=top;i++)
+		if (book[i].getnum()==bookid && book[i].gettag()==0)
+			return &book[i];
+		return NULL;
+}
+int BDatabase::qname(char* nm)
+{
+	int j=0;
+	for(int i=0;i<=top;i++)
+		if((strcmp(book[i].getname(),nm)==0)&&book[i].gettag()==0)
+			j++;
+		if(j==0)
+			return 0;
+		else
+			return j;
+}
+Book* BDatabase::Qname(char* nm)
+{
+	int j=0;
+	Book b[100];
+	for (int i=0;i<=top;i++)
+		if ((strcmp(book[i].getname(),nm)==0) && book[i].gettag()==0)
+			 b[j++]=book[i];
+		if(j==0)
+			return NULL;
+		else
+		return b;
+}
+int BDatabase::qzuozhe(char *wr) 
+{
+	int e=0;
+	for (int i=0;i<=top;i++)
+		if ((strcmp(book[i].getwriter(),wr)==0) && book[i].gettag()==0)
+			e++;
+		if(e==0)
+			return 0;
+		else
+			return e;
+}
+Book* BDatabase::Qzuozhe(char *wr) 
+{
+	int f=0;
+	Book b[100];
+	for (int i=0;i<=top;i++)
+		if ((strcmp(book[i].getwriter(),wr)==0) && book[i].gettag()==0)
+			 b[f++]=book[i];
+		if(f==0)
+			return NULL;
+		else
+		return b;
+}
+int BDatabase::qchuban(char *cb) 
+{
+	int g=0;
+	for (int i=0;i<=top;i++)
+		if ((strcmp(book[i].getconcem(),cb)==0) && book[i].gettag()==0)
+			g++;
+		if(g==0)
+			return 0;
+		else
+			return g;
+}
+Book* BDatabase::Qchuban(char *cb) 
+{
+	int h=0;
+	Book b[100];
+	for (int i=0;i<=top;i++)
+		if ((strcmp(book[i].getconcem(),cb)==0) && book[i].gettag()==0)
+			b[h++]=book[i];
+		if(h==0)
+			return NULL;
+		else
+		return b;
+}
+void BDatabase::bookdata()    //图书库维护
+{
+	int choice=1;
+	char bname[40];
+	int bookid;
+	char bwriter[15];
+	char bconcem[15];
+	char btime[15];
+	float bprice;
+	Book *b;
+	int r=0;
+	while (choice!=0)
+	{
+		cout<<endl<<endl<<endl<<endl;
+		cout << "      ******************************************************"<<endl;
+
+        cout << "      **                    图书维护                      **"<<endl;
+
+        cout << "      **                    1:新增                        **"<<endl;
+
+        cout << "      **                    2:删除                        **"<<endl;
+
+        cout << "      **                    3:查找                        **"<<endl;
+
+        cout << "      **                    4:显示                        **"<<endl;
+
+        cout << "      **                    5:全删                        **"<<endl;
+
+        cout << "      **                    0:退出                        **"<<endl;
+
+        cout << "      ******************************************************"<<endl;
+
+        cout<<"请选择您将进行的操作:";
+		cin >> choice;
+		switch (choice)
+		{
+		case 1:
+			cout << " 输入图书编号:";
+			cin >> bookid;
+			do
+			{
+				if(r!=0)
+				{
+					cout<<" 该编号已存在，请重新输入图书编号:";
+					cin>>bookid;
+				}
+				r++;
+				if(r==3)
+					break;
+			}
+			while(query(bookid)!=NULL);
+			if(r==3)
+			{
+				system("cls");
+				break;
+			}
+			cout << " 输入图书书名:";
+			cin >> bname;
+			cout << " 输入图书作者:";
+			cin >> bwriter;
+			cout << " 输入图书出版社:";
+			cin >> bconcem;
+			cout << " 输入图书出版时间:";
+			cin>>btime;
+			cout << " 输入图书价格:";
+			cin >>bprice;
+			cout<<"图书添加成功"<<endl;
+			Sleep(1000); 
+			system("cls");
+			addbook(bookid,bname,bwriter,bconcem,btime,bprice);
+			break;
+		case 2:
+			cout << " 输入图书编号:";
+			cin >> bookid;
+			b=query(bookid);
+			if (b==NULL)
+			{
+				cout << " 该图书不存在" << endl;
+				Sleep(1000); 
+			    system("cls");
+				break;
+			}
+			cout<<"该图书已删除"<<endl;
+			Sleep(1000); 
+			system("cls");
+			b->delbook();
+			break;
+		case 3:
+			cout << " 输入图书编号:";
+			cin >> bookid;
+			b=query(bookid);
+			if (b==NULL)
+			{
+				cout << " 该图书不存在" << endl;
+				Sleep(1000); 
+			    system("cls");
+				break;
+			} 
+			system("cls");
+			cout<<"您所查找的图书信息如下"<<endl;
+			b->disp();
+			break;
+		case 4:
+			system("cls");
+			cout<<"所有图书信息如下"<<endl;
+			disp();
+			break;
+		case 5:
+			clear();
+			cout<<"所有图书已删除"<<endl;
+			Sleep(1000); 
+			system("cls");
+			break;
+		}
+	}
+	system("cls");
+}
+void BDatabase::disp()
+{
+	Book temp;
+	for (int i=0;i<=top&&(book[i].gettag()==0);i++)
+		for(int j=i+1;j<=top&&(book[j].gettag()==0);j++)
+		if(strcmp(book[i].gettime(),book[j].gettime())<0)
+		{
+			temp=book[i];
+            book[i]=book[j];
+            book[j]=temp;
+		}
+		for(int x=0;x<=top&&(book[x].gettag()==0);x++)
+			book[x].disp();
+}
+BDatabase::~BDatabase() //析构函数,将book[]写入book.txt文件中
+{
+	fstream file("d:\\book.txt",ios::out);
+	for (int i=0;i<=top;i++)
+		if (book[i].gettag()==0)
+			file.write((char *)&book[i],sizeof(book[i]));
+		file.close();
+}
+class Rdatebase  //读者库类
+{
+	int top;
+	Reader read[Maxr]; //读者记录
+public:
+	Rdatebase();
+	void disp();
+	void clear();
+	void addreader(int n,char *na,char* mi) ;
+	Reader *query(int readerid);
+	~Rdatebase();
+    void readerdata();
+};
+Rdatebase::Rdatebase()//构造函数,将reader.txt读到read[]中
+{
+	Reader s;
+	top=-1;
+	fstream file("d:\\reader.txt",ios::in);
+	while (1)
+	{
+		file.read((char *)&s,sizeof(s));
+		if (!file) break;
+		top++;
+		read[top]=s;
+	}
+	file.close();
+}
+void Rdatebase::disp()
+{
+	for (int i=0;i<=top;i++)
+		if (read[i].gettag()==0)
+			read[i].disp();
+}
+void Rdatebase::clear()
+{
+	top=-1;
+}
+void Rdatebase::addreader(int n,char *na,char* mi) 
+{
+		top++;
+		read[top].addreader(n,na,mi);
+}
+Reader* Rdatebase::query(int readerid)
+{
+	for (int i=0;i<=top;i++)
+		if (read[i].getnum()==readerid &&read[i].gettag()==0)
+			return &read[i];
+		return NULL;
+}
+Rdatebase::~Rdatebase() //析构函数,将read[]写入reader.txt文件中
+{
+	fstream file("d:\\reader.txt",ios::out);
+	for (int i=0;i<=top;i++)
+		if (read[i].gettag()==0)
+			file.write((char *)&read[i],sizeof(read[i]));
+		file.close();
+}
+void Rdatebase::readerdata()//读者库维护
+{
+	int choice=1;
+	char rname[20];
+	int readerid;
+	char rmima[6];
+	Reader *r;
+	while (choice!=0)
+	{
+		cout<<endl<<endl<<endl<<endl;
+		cout << "      ******************************************************"<<endl;
+
+        cout << "      **                    读者维护                      **"<<endl;
+
+        cout << "      **                    1:新增                        **"<<endl;
+
+        cout << "      **                    2:更改                        **"<<endl;
+
+        cout << "      **                    3:删除                        **"<<endl;
+
+        cout << "      **                    4:查找                        **"<<endl;
+
+        cout << "      **                    5:显示                        **"<<endl;
+
+        cout << "      **                    6:全删                        **"<<endl; 
+
+        cout << "      **                    0:退出                        **"<<endl;
+
+        cout << "      ******************************************************"<<endl;
+		cout<<"请选择您将进行的操作:";
+
+        cin >> choice;
+		int a=0;
+		int i=0;
+		switch (choice)
+		{
+		case 0:
+			system("cls");
+			break;
+		case 1:
+			cout << " 输入读者编号:";
+			cin >> readerid;
+			do
+			{
+				if(a!=0)
+				{
+					cout<<"该读者已存在，请重新输入:";
+				    cin >> readerid;
+				}
+				a++;
+			}
+			while(query(readerid)!=NULL);
+			cout << " 输入读者密码:";
+			for(i;i<6;i++)
+			{
+				rmima[i]=getch();
+			    putch('*');
+			}
+			cout <<endl<< " 输入读者姓名:";
+			cin >> rname;
+			cout<<"读者添加成功"<<endl;
+			addreader(readerid,rname,rmima);
+			Sleep(1000);
+			system("cls");
+			break;
+		case 2:
+			cout << " 输入读者编号:";
+			cin >> readerid;
+			r=query(readerid);
+			if (r==NULL)
+			{
+				cout << " 该读者不存在" << endl;
+				Sleep(1000);
+			    system("cls");
+				break;
+			}
+			cout << " 输入新的读者姓名:";
+			cin >> rname;
+			cout<<"读者更改成功"<<endl;
+			Sleep(1000);
+			system("cls");
+			r->setname(rname);
+			break;
+		case 3:
+			cout << " 输入读者编号:";
+			cin >> readerid;
+			r=query(readerid);
+			if (r==NULL)
+			{
+				cout <<" 该读者不存在" << endl;
+				Sleep(1000);
+			    system("cls");
+				break;
+			}
+			cout<<"读者删除成功"<<endl;
+			Sleep(1000);
+			system("cls");
+			r->delreader();
+			break;
+		case 4:
+			cout << "读入读者编号:";
+			cin >> readerid;
+			r=query(readerid);
+			if (r==NULL)
+			{
+				cout <<"该读者不存在"<< endl;
+				Sleep(1000);
+			    system("cls");
+				break;
+			}
+			system("cls");
+			cout<<"您所查找的读者信息如下"<<endl;
+			r->disp();
+			break;
+		case 5:
+			system("cls");
+			cout<<"所有读者信息如下"<<endl;
+			disp();
+			break;
+		case 6:
+			clear();
+			cout<<"所有读者已删除"<<endl;
+			Sleep(1000);
+			system("cls");
+			break;
+		}
+	}
+}
+
+bbbbbbbbbbbbbbbb图书馆bbbbbbbbbbbbb
+#include <iostream>
+#include <stdio.h>
+#include <string>
+#include <algorithm>
+#include <vector>
+//#include <Windows.h>
+#include <map>
+#include <sstream>
+#include <afxinet.h>
+//#include <direct.h>
+#include <Shlwapi.h>
+#include <fstream>
+ 
+//告诉连接器，增加lib的引用
+#pragma comment(lib,"Shlwapi.lib")
+ 
+using namespace std;
+ 
+#define FG_RED FOREGROUND_INTENSITY | FOREGROUND_RED
+#define FG_GREEN FOREGROUND_INTENSITY | FOREGROUND_GREEN
+#define FG_GRAY FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE
+//#define _AFXDLL
+ 
+//枚举类 enum
+enum LV
+{
+INFO,
+ERR,
+OK
+};
+ 
+//log 日志抽象为一个实体 方便验错
+class log_level
+{
+public:
+ 
+//成员变量，跟着类的实体走
+LV m_lv;
+HANDLE m_handle;
+ 
+//构造函数-造房子 函数名与类名一致
+log_level(LV log_v)
+{
+m_lv = log_v;
+ 
+//windows api
+//获取标准输出句柄
+m_handle = GetStdHandle(STD_OUTPUT_HANDLE);
+ 
+if (log_v == ERR)
+{
+SetConsoleTextAttribute(m_handle,FG_RED);
+}
+else if (log_v == OK)
+{
+SetConsoleTextAttribute(m_handle,FG_GREEN);
+}
+else
+{
+SetConsoleTextAttribute(m_handle,FG_GRAY);
+}
+}
+ 
+//析构函数-拆房子
+~log_level()
+{
+SetConsoleTextAttribute(m_handle,FG_GRAY);
+}
+ 
+// 操作符重载
+operator char*()
+{
+return "";
+}
+};
+ 
+enum STATUS
+{
+IN_STOCK,
+ON_LOAN
+ 
+};
+class Book
+{
+public:
+int id;
+string name;
+STATUS status_book;
+ 
+//默认参数，此参数只有c++才有，意思是该参数可以不传默认为设定键值
+Book(int inputID,string inputName,STATUS status = IN_STOCK)
+{
+id = inputID;
+name = inputName;
+status_book = status;
+ 
+}
+//给书装配一些属性
+};
+ 
+//书籍数据库
+vector<Book> bookDB;
+ 
+typedef vector<string> STR_MATRIX;
+ 
+//用户数据库
+map<string,string> userDataBase;
+ 
+//切割，返回字符数组哟，好强大
+vector<string> split(string str)
+{
+vector<string> totalChunks;
+string chunkBuffer = "";
+int i;
+ 
+for(i = 0;i<str.size();i++)
+{
+char c = str[i];
+if(c == ' ')
+{
+if(chunkBuffer != "")
+{
+totalChunks.push_back(chunkBuffer);
+chunkBuffer = "";
+}
+}
+else
+{
+chunkBuffer += c;
+}
+}
+ 
+if(chunkBuffer != "")
+{
+totalChunks.push_back(chunkBuffer);
+ 
+}
+return totalChunks;
+}
+ 
+class BookSystem
+{
+public:
+ 
+BookSystem()
+{
+lastID = 0;
+}
+ 
+//设置路径
+string getDbpath()
+{
+//获取自己的路径window下必须用api，获取当前路径
+char buff[MAX_PATH];
+ 
+//获取.exe文件下的目录
+GetModuleFileName(NULL, buff, MAX_PATH);
+//getcwd(buff, MAX_PATH);
+ 
+//获取当前目录
+//GetCurrentDirectory(MAX_PATH, buff);
+ 
+//第二个参数需要用到unicode字符集，在工程中修改属性
+//在该目录下创建你需要的文件或者文件夹
+PathRemoveFileSpec(buff);
+ 
+//连接数据库名
+PathAppend(buff, "booksysdb.txt");
+ 
+return buff;//string 构造函数支持
+}
+ 
+//抽象动作
+void runCommand(string input)
+{
+//分割输入
+vector<string> chunks = split(input);
+ 
+string cmdName;
+cmdName = chunks[0];
+ 
+if(cmdName == "reg")
+{
+reg(chunks);
+}
+else if(cmdName == "login")
+{
+login(chunks);
+}
+else if (cmdName == "addbook")
+{
+addbook(chunks);
+}
+else if (cmdName == "listbook")
+{
+listbook(chunks);
+}
+else if (cmdName == "savedb")
+{
+savedb(chunks);
+}
+else if (cmdName == "loaddb")
+{
+loaddb(chunks);
+}
+ 
+}
+ 
+//用户功能实现
+void reg(vector<string> chunks)
+{
+ 
+if(chunks.size() < 3)
+{
+cout << log_level(ERR) << "Syntax error:reg command requires 2 parameters:UserName and PassWord" <<endl;
+return;
+}
+else
+{
+string userName = chunks[1];
+string passWord = chunks[2];
+ 
+//用户验证防止重复注册
+if (userDataBase.find(userName) == userDataBase.end())
+{
+userDataBase[userName] = passWord;
+cout << log_level(OK) << "the user" << userName << "has been registered successful" << endl;
+}
+else
+{
+cout << log_level(ERR) << "the user" << userName << "has been existed" << endl;
+}
+ 
+}
+ 
+return;
+}
+ 
+void login(vector<string> chunks)
+{
+if(chunks.size() < 3)
+{
+cout << log_level(ERR) << "Syntax error:login command requires 2 parameters:UserName and PassWord" <<endl;
+return;
+}
+else
+{
+string userName = chunks[1];
+string passWord = chunks[2];
+ 
+//用户验证防止重复注册
+if (userDataBase.find(userName) == userDataBase.end())
+{
+cout << log_level(ERR) << "the user" << userName << "is not found" << endl;
+}
+else
+{
+if(userDataBase[userName] == passWord)
+{
+cout << log_level(OK) << "the user" << userName << "has been logined" << endl;
+}
+else
+{
+cout << log_level(ERR) << "the password is correct" << endl;
+}
+}
+ 
+  }
+ 
+};
+ 
+int lastID;
+void addbook(vector<string> chunks)
+{
+//addbook 语文 若干本
+string title_name = chunks[1];
+string countStr = chunks[2];
+ 
+//将字符类型string转换成整型
+for (int i = 0; i < atoi(countStr.c_str()); i++)
+{
+lastID++;
+ 
+Book newBook(lastID, title_name);
+ 
+bookDB.push_back(newBook);
+}
+cout << log_level(OK) << "add book successfully" << endl;
+ 
+}
+ 
+//
+void listbook(vector<string> chunks)
+{
+for(int i = 0; i < bookDB.size(); i++)
+{
+Book book = bookDB[i];
+cout << log_level(OK) << book.id << " " << book.name << endl;
+}
+}
+ 
+//用户接口统一
+void loaddb(vector<string> chunks)
+{
+loadb_internal();
+}
+ 
+void loadb_internal()
+{
+//加载数据库
+//获取当前路径
+string dbPath = getDbpath();
+ 
+//cout << dbPath << endl;
+ 
+//创建文件的输入文件流
+//input file stream
+ifstream input(dbPath);
+ 
+if (input.bad())
+{
+// Dump the contents of the file to cout.
+cout << "数据库打开失败";
+input.close();
+}
+else
+{
+ 
+string currline;
+//读取文本每一行，知道结束(eof,只要没结束就继续啦）
+while(getline(input,currline))
+{
+//获取每一行
+//切割
+auto chunks = split(currline);
+ 
+//判断内容是否为空白
+if (chunks.size() == 0)
+{
+break;
+}
+ 
+if(chunks[0] == "USER")
+{
+string userName = chunks[1];
+string password = chunks[2];
+ 
+//插入DB
+userDataBase[userName] = password;
+ 
+}
+else if (chunks[0] == "BOOK")
+{
+string idStr = chunks[1];
+string name = chunks[2];
+string statusStr = chunks[3];
+ 
+//转换相应类型后传入参数 istringstream(id)
+int id;
+istringstream(idStr) >> id;
+ 
+//enum枚举本质是int
+//加& 代表引用
+STATUS status;
+istringstream(statusStr) >> (int&)status;
+ 
+Book currBook(id, name, status);
+bookDB.push_back(currBook);
+}
+ 
+}
+ 
+input.close();
+}
+ 
+}
+ 
+//
+void savedb(vector<string> chunks)
+{
+//获取当前路径
+string dbPath = getDbpath();
+ 
+//文件输出流output file stream
+ofstream output(dbPath);
+ 
+//保存用户信息
+//键+值 = 对
+map<string, string>::iterator it = userDataBase.begin();
+for (;it != userDataBase.end() ;++it)
+{
+output << "USER" << " " << it->first << " " << it->second << endl;
+}
+ 
+//保存书本信息
+vector<Book>::iterator itk = bookDB.begin();
+for (; itk != bookDB.end(); ++itk)
+{
+output << "BOOK" << " " << itk->id << " " << itk->name << " " << itk->status_book << endl;
+}
+ 
+output.close();
+ 
+}
+ 
+};
+ 
+int main(int argc,char* argv[])
+{
+BookSystem bookSys;
+ 
+//string dbPath = bookSys.getDbpath();
+bookSys.loadb_internal();
+ 
+cout << ("hello welcome to my world") << endl;
+ 
+string inputBuffer;
+do
+{
+cout << ("book system>>");
+ 
+//cin >>inputBuffer;
+//输入可包含空格
+getline(cin,inputBuffer);
+ 
+bookSys.runCommand(inputBuffer);
+ 
+}while(inputBuffer != "exit");
+ 
+}
+ccccccccccccccc人员管理cccccccccccccc
+#include"iostream"
+#include <fstream>
+#include"stdlib.h"
+#define MAX 100
+using namespace std;
+class person
+{
+public:
+	int num;
+	char name[20];
+	char sex[4];
+	int age;
+};
+//Teacher class
+class Teacher:virtual public person
+{
+public:
+	char dept[20];
+	char special[20];
+	char title[20];
+	void Input()
+	{
+		cout<<"Input num:";cin>>num;
+		cout<<"Input name:";cin>>name;
+		cout<<"Input sex:";cin>>sex;
+		cout<<"Input age:";cin>>age;
+		cout<<"Input dept:";cin>>dept;
+		cout<<"Input special:";cin>>special;
+		cout<<"Input title:";cin>>title;
+	}
+	void Output()
+	{
+		cout<<"编号: "<<num<<"  "<<"姓名: "<<name<<"  "<<"性别: "<<sex<<"  "<<"年龄: "<<age<<
+			"  "<<"所在系: "<<dept<<"  "<<"专业: "<<special<<"  "<<"职称: "<<title<<endl;
+	}
+};
+Teacher Tea[MAX];
+static int Teatop;
+ 
+ 
+ 
+class TeaManager
+{
+public:
+	int Add();
+	int Search();
+	void Show();
+	void Edit();
+	int Delete();
+	void Save();
+	void Read();
+};
+int TeaManager::Add()
+{
+	Teacher t;
+	int i,nu;
+	if(Teatop==MAX) 
+	{cout<<"人数已满"<<endl;
+	return 0;
+	}
+    cout<<"请输入编号：";cin>>nu;
+	for(i=0;i<Teatop;i++)
+	{
+		if(nu==Tea[i].num)
+		{cout<<"已有编号，请从输入"<<endl;
+		return 0;
+		}
+	}
+	t.Input();Tea[Teatop]=t;Teatop++;
+	cout<<"添加成功！"<<endl;
+    return 1;
+}
+int TeaManager::Search()
+{
+	int j,n;
+	cout<<"请输入编号：";cin>>n;
+	for(j=0;j<Teatop;j++)
+	{
+		if(n==Tea[j].num) break;
+	}
+	if(j==Teatop)
+		cout<<"没有此人！"<<endl;
+	else
+		Tea[j].Output();
+	return 1;
+}
+void TeaManager::Show()
+{
+	int i;
+	if(Teatop==0)
+	{cout<<"记录为空！"<<endl; return;}
+    for(i=0;i<Teatop;i++)
+		Tea[i].Output();
+}
+void TeaManager::Edit()
+{
+	Teacher t1;
+	int j,n;
+	cout<<"请输入要编辑的人的编号：";cin>>n;
+	for(j=0;j<Teatop;j++)
+	{
+		if(n==Tea[j].num) break;
+	}
+	if(j==Teatop)
+	{cout<<"没有此人！"<<endl;return;};
+	cout<<"输入修改后的信息，编号不能改:"<<endl;
+	t1.Input();
+	Tea[j]=t1;
+	cout<<"编辑成功！"<<endl;
+}
+int TeaManager::Delete()
+{
+	int j,n;
+	cout<<"请输入要删除的人的编号：";cin>>n;
+	for(j=0;j<Teatop;j++)
+	{
+		if(n==Tea[j].num) break;
+	}
+	if(j==Teatop)
+	{cout<<"没有此人！"<<endl;return 0;};
+    for(j;j<Teatop;j++)
+	{
+		Tea[j]=Tea[j+1];
+	}
+	Teatop--;
+	cout<<"删除成功！"<<endl;
+	return 1;
+}
+void TeaManager::Save()
+{
+	int i;
+    ofstream outfile,outfile1;   
+	outfile1.open("Teatop.dat",ios::out);
+	outfile1<<Teatop;
+	outfile.open("Tea_data.dat",ios::binary);   
+	   if(!outfile)
+	   {cerr<<"open error!"<<endl; return; }
+	   for(i=0;i<Teatop;i++)
+		   outfile.write((char *)&Tea[i],sizeof(Tea[i])); 
+       outfile.close();   
+	   cout<<"保存成功！"<<endl;
+} 
+void TeaManager::Read()
+{
+	int i;
+    ifstream infile,infile1; 
+	infile1.open("Teatop.dat",ios::in);
+	infile1>>Teatop;
+	infile.open("Tea_data.dat",ios::binary);   
+	   if(!infile)
+	   {cerr<<"open error!"<<endl; return; }
+	   for(i=0;i<Teatop;i++)
+		   infile.read((char *)&Tea[i],sizeof(Tea[i])); 
+       infile.close();  
+	   cout<<"读取成功！"<<endl;
+} 
+void Tea_mune(TeaManager TM)
+{
+	int b;
+	char c;
+	do{
+		cout<<"教师管理"<<endl;
+		cout<<"=========================================================================================="<<endl;
+		cout<<"| 1.添加    ";
+		cout<<"2.查询    ";
+		cout<<"3.显示    ";
+		cout<<"4.编辑    ";
+		cout<<"5.删除    ";
+		cout<<"6.统计    ";
+		cout<<"7.保存    ";
+		cout<<"8.读取    ";
+		cout<<"0.退出 |"<<endl;
+		cout<<"=========================================================================================="<<endl;
+		cout<<"请选择：";cin>>b;
+		switch(b)
+		{
+		case 1:TM.Add();break;
+		case 2:TM.Search();break;
+		case 3:TM.Show();break;
+		case 4:TM.Edit();break;
+		case 5:TM.Delete();break;
+		case 6:cout<<"共有教师人数："<<Teatop<<endl;break;
+		case 7:TM.Save();break;
+		case 8:TM.Read();break;
+		default:cout<<"\n error"<<endl;break;
+		case 0:break;
+		}
+		cout<<"按回车键继续"<<endl;
+		flushall();
+		c=getchar();
+		system("cls");
+	}while(b!=0);
+}
+ 
+class Tester:virtual public person
+{
+public:
+	char testroom[10];
+	char post[10];
+	void Input()
+	{
+		cout<<"Input num:";cin>>num;
+		cout<<"Input name:";cin>>name;
+		cout<<"Input sex:";cin>>sex;
+		cout<<"Input age:";cin>>age;
+		cout<<"Input testroom:";cin>>testroom;
+		cout<<"Input post:";cin>>post;
+	}
+	void Output()
+	{
+		cout<<"编号: "<<num<<"  "<<"姓名: "<<name<<"  "<<"性别: "<<sex<<"  "<<"年龄: "<<age<<
+			"  "<<"所在实验室: "<<testroom<<"  "<<"职务: "<<post<<endl;
+	}
+ 
+};
+Tester Test[MAX];
+static int Testop;
+class TestManager
+{
+public:
+	int Add();
+	int Search();
+	void Show();
+	void Edit();
+	int Delete();
+	void Save();
+	void Read();
+};
+int TestManager::Add()
+{
+	Tester t;
+	int i,nu;
+	if(Testop==MAX) 
+	{cout<<"人数已满"<<endl;
+	return 0;
+	}
+    cout<<"请输入编号：";cin>>nu;
+	for(i=0;i<Testop;i++)
+	{
+		if(nu==Test[i].num)
+		{cout<<"已有编号，请从输入"<<endl;
+		return 0;
+		}
+	}
+	t.Input();
+	Test[Testop]=t;
+	Testop++;
+	cout<<"添加成功！"<<endl;
+    return 1;
+}
+int TestManager::Search()
+{
+	int j,n;
+	cout<<"请输入编号：";cin>>n;
+	for(j=0;j<Testop;j++)
+	{
+		if(n==Test[j].num) break;
+	}
+	if(j==Testop)
+		cout<<"没有此人！"<<endl;
+	else
+		Test[j].Output();
+	return 1;
+}
+void TestManager::Show()
+{
+	int i;
+	if(Testop==0)
+	{cout<<"记录为空！"<<endl; return;}
+    for(i=0;i<Testop;i++)
+		Test[i].Output();
+}
+void TestManager::Edit()
+{
+	Tester t1;
+	int j,n;
+	cout<<"请输入要编辑的人的编号：";cin>>n;
+	for(j=0;j<Testop;j++)
+	{
+		if(n==Test[j].num) break;
+	}
+	if(j==Testop)
+	{cout<<"没有此人！"<<endl;return;};
+	cout<<"输入修改后的信息，编号不能改:"<<endl;
+	t1.Input();
+	Test[j]=t1;
+	cout<<"编辑成功！"<<endl;
+}
+int TestManager::Delete()
+{
+	int j,n;
+	cout<<"请输入要删除的人的编号：";cin>>n;
+	for(j=0;j<Testop;j++)
+	{
+		if(n==Test[j].num) break;
+	}
+	if(j==Testop)
+	{cout<<"没有此人！"<<endl;return 0;};
+    for(j;j<Testop;j++)
+	{
+		Test[j]=Test[j+1];
+	}
+	Testop--;
+	cout<<"删除成功！"<<endl;
+	return 1;
+}
+void TestManager::Save()
+{
+	int i;
+    ofstream outfile,outfile1;   
+	outfile1.open("Testop.dat",ios::out);
+	outfile1<<Testop;
+	outfile.open("Test_data.dat",ios::binary);   
+	   if(!outfile)
+	   {cerr<<"open error!"<<endl; return; }
+	   for(i=0;i<Testop;i++)
+		   outfile.write((char *)&Test[i],sizeof(Test[i])); 
+       outfile.close();   
+	   cout<<"保存成功！"<<endl;
+} 
+void TestManager::Read()
+{
+	int i;
+    ifstream infile,infile1; 
+	infile1.open("Testop.dat",ios::in);
+	infile1>>Testop;
+	infile.open("Test_data.dat",ios::binary);   
+	   if(!infile)
+	   {cerr<<"open error!"<<endl; return; }
+	   for(i=0;i<Testop;i++)
+		   infile.read((char *)&Test[i],sizeof(Test[i])); 
+       infile.close();  
+	   cout<<"读取成功！"<<endl;
+} 
+void Test_mune(TestManager TM)
+{
+	int b;
+	char c;
+	do{
+		cout<<"实验人员管理"<<endl;
+		cout<<"=========================================================================================="<<endl;
+		cout<<"| 1.添加    ";
+		cout<<"2.查询    ";
+		cout<<"3.显示    ";
+		cout<<"4.编辑    ";
+		cout<<"5.删除    ";
+		cout<<"6.统计    ";
+		cout<<"7.保存    ";
+		cout<<"8.读取    ";
+		cout<<"0.退出 |"<<endl;
+		cout<<"=========================================================================================="<<endl;
+		cout<<"请选择：";cin>>b;
+		switch(b)
+		{
+		case 1:TM.Add();break;
+		case 2:TM.Search();break;
+		case 3:TM.Show();break;
+		case 4:TM.Edit();break;
+		case 5:TM.Delete();break;
+		case 6:cout<<"共有实验员人数："<<Testop<<endl;break;
+		case 7:TM.Save();break;
+		case 8:TM.Read();break;
+		default:cout<<"\n error"<<endl;break;
+		case 0:break;
+		}
+		cout<<"按回车键继续"<<endl;
+		flushall();
+		c=getchar();
+		system("cls");
+	}while(b!=0);
+}
+ 
+class Policer:virtual public person
+{
+public:
+	char polices[10];
+	char post1[10];
+	void Input()
+	{
+		cout<<"Input num:";cin>>num;
+		cout<<"Input name:";cin>>name;
+		cout<<"Input sex:";cin>>sex;
+		cout<<"Input age:";cin>>age;
+		cout<<"Input polices:";cin>>polices;
+		cout<<"Input post1:";cin>>post1;
+	}
+	void Output()
+	{
+		cout<<"编号: "<<num<<"  "<<"姓名: "<<name<<"  "<<"性别: "<<sex<<"  "<<"年龄: "<<age<<
+			"  "<<"政治面貌: "<<polices<<"  "<<"职称: "<<post1<<endl;
+	}
+ 
+};
+Policer Policers[MAX];
+static int Policersop;
+class PolicerManager
+{
+public:
+	int Add();
+	int Search();
+	void Show();
+	void Edit();
+	int Delete();
+	void Save();
+	void Read();
+};
+int PolicerManager::Add()
+{
+	Policer t;
+	int i,nu;
+	if(Policersop==MAX) 
+	{cout<<"人数已满"<<endl;
+	return 0;
+	}
+    cout<<"请输入编号：";cin>>nu;
+	for(i=0;i<Policersop;i++)
+	{
+		if(nu==Policers[i].num)
+		{cout<<"已有编号，请从输入"<<endl;
+		return 0;
+		}
+	}
+	t.Input();
+	Policers[Policersop]=t;
+	Policersop++;
+	cout<<"添加成功！"<<endl;
+    return 1;
+}
+int PolicerManager::Search()
+{
+	int j,n;
+	cout<<"请输入编号：";cin>>n;
+	for(j=0;j<Policersop;j++)
+	{
+		if(n==Policers[j].num) break;
+	}
+	if(j==Policersop)
+		cout<<"没有此人！"<<endl;
+	else
+		Policers[j].Output();
+	return 1;
+}
+void PolicerManager::Show()
+{
+	int i;
+	if(Policersop==0)
+	{cout<<"记录为空！"<<endl; return;}
+    for(i=0;i<Policersop;i++)
+		Policers[i].Output();
+}
+void PolicerManager::Edit()
+{
+	Policer t1;
+	int j,n;
+	cout<<"请输入要编辑的人的编号：";cin>>n;
+	for(j=0;j<Policersop;j++)
+	{
+		if(n==Policers[j].num) break;
+	}
+	if(j==Policersop)
+	{cout<<"没有此人！"<<endl;return;};
+	cout<<"输入修改后的信息，编号不能改:"<<endl;
+	t1.Input();
+	Policers[j]=t1;
+	cout<<"编辑成功！"<<endl;
+}
+int PolicerManager::Delete()
+{
+	int j,n;
+	cout<<"请输入要删除的人的编号：";cin>>n;
+	for(j=0;j<Policersop;j++)
+	{
+		if(n==Policers[j].num) break;
+	}
+	if(j==Policersop)
+	{cout<<"没有此人！"<<endl;return 0;};
+    for(j;j<Policersop;j++)
+	{
+		Policers[j]=Policers[j+1];
+	}
+	Policersop--;
+	cout<<"删除成功！"<<endl;
+	return 1;
+}
+void PolicerManager::Save()
+{
+	int i;
+    ofstream outfile,outfile1;   
+	outfile1.open("Policersop.dat",ios::out);
+	outfile1<<Policersop;
+	outfile.open("Policers_data.dat",ios::binary);   
+	   if(!outfile)
+	   {cerr<<"open error!"<<endl; return; }
+	   for(i=0;i<Policersop;i++)
+		   outfile.write((char *)&Policers[i],sizeof(Policers[i])); 
+       outfile.close();   
+	   cout<<"保存成功！"<<endl;
+} 
+void PolicerManager::Read()
+{
+	int i;
+    ifstream infile,infile1; 
+	infile1.open("Policersop.dat",ios::in);
+	infile1>>Policersop;
+	infile.open("Policers_data.dat",ios::binary);   
+	   if(!infile)
+	   {cerr<<"open error!"<<endl; return; }
+	   for(i=0;i<Policersop;i++)
+		   infile.read((char *)&Policers[i],sizeof(Policers[i])); 
+       infile.close();  
+	   cout<<"读取成功！"<<endl;
+} 
+void Policers_mune(PolicerManager TM)
+{
+	int b;
+	char c;
+	do{
+		cout<<"行政人员管理"<<endl;
+		cout<<"=========================================================================================="<<endl;
+		cout<<"| 1.添加    ";
+		cout<<"2.查询    ";
+		cout<<"3.显示    ";
+		cout<<"4.编辑    ";
+		cout<<"5.删除    ";
+		cout<<"6.统计    ";
+		cout<<"7.保存    ";
+		cout<<"8.读取    ";
+		cout<<"0.退出 |"<<endl;
+		cout<<"=========================================================================================="<<endl;
+		cout<<"请选择：";cin>>b;
+		switch(b)
+		{
+		case 1:TM.Add();break;
+		case 2:TM.Search();break;
+		case 3:TM.Show();break;
+		case 4:TM.Edit();break;
+		case 5:TM.Delete();break;
+		case 6:cout<<"共有行政员人数："<<Policersop<<endl;break;
+		case 7:TM.Save();break;
+		case 8:TM.Read();break;
+		default:cout<<"\n error"<<endl;break;
+		case 0:break;
+		}
+		cout<<"按回车键继续"<<endl;
+		flushall();
+		c=getchar();
+		system("cls");
+	}while(b!=0);
+}
+ 
+int main()
+{
+	TeaManager Tmer1;
+	TestManager Tetmer;
+	PolicerManager Polimer;
+	int a=1,m=0;
+	char c;
+	cout<<"    *************************************";
+	cout<<endl<<"    $         高校人员管理系统         $"<<endl;
+	cout<<"    *************************************";
+	cout<<endl<<"请输入密码：";cin>>m;
+ 
+	if(m!=666) 
+	{
+		cout<<"密码错误！"<<endl;
+		flushall();
+		c=getchar();
+		return 0;
+	}
+ 
+	while(a)
+	{
+		system("cls");
+		cout<<endl;
+		cout<<"              ****欢迎使用高校人员信息管理系统****"<<endl;
+		cout<<"               ================================="<<endl;
+		cout<<"               | 1.教师管理                    |"<<endl;
+		cout<<"               | 2.实验员管理                  |"<<endl;
+		cout<<"               | 3.行政员管理                  |"<<endl;
+		cout<<"               | 0.退出                        |"<<endl;
+		cout<<"               ================================="<<endl;
+		cout<<"请选择:";cin>>a;	
+ 
+		switch(a)
+		{
+		case 1:Tea_mune(Tmer1);break;
+		case 2:Test_mune(Tetmer);break;
+		case 3:Policers_mune(Polimer);break;
+		case 0:break;
+		default:cout<<"\n error"<<endl;
+		cout<<"按回车键继续"<<endl;
+		flushall();
+		c=getchar();		 
+		break;
+		}
+	}
+ 
+	cout<<endl<<"谢谢使用"<<endl;
+	flushall();
+	c=getchar();
+	return 0;
+}
+dddddddddddddddd图书馆dddddddddddd
+# define NUM1 128
+# define NUM2 50
+ 
+/*
+图书管理系统需要创建CBook类，通过CBook类实现图书记录的写入和删除，
+还可以通过CBook类查看每条图书的信息。
+CBook类中包含m_cName、m_clsbn、m_cPrice和m_cAuthor4个成员变量，
+分别代表图书的名称、lSBN编号、价格和作者。
+在类设计时，可以将数据成员变量看作属性，这样类中还需要有设置属性和获取属性的成员函数，
+设置属性的函数以Set开头，获取属性的函数以Get开头。
+*/
+ 
+ 
+class CBook
+{
+public:
+	CBook() {}
+	CBook(char* cName, char* clsbn, char* cPrice, char* cAuthor);
+	~CBook() {}
+public:
+	char*  GetName();                // 获取图书名称
+	void SetName(char* cName);       // 设置图书名称
+	char*  Getlsbn();                // 获取图书ISBN编号
+	void Setlsbn(char* clsbn);       // 设置图书ISBN编号
+	char*  GetPrice();               // 获取图书价格
+	void SetPrice(char* cPrice);     // 设置图书价格
+	char*  GetAuthor();              // 获取图书作者
+	void SetAuthor(char* cPrice);    // 设置图书作者
+	void  WriteData();               // 写入图书
+	void  DeleteData(int iCount);    // 删除图书
+	void GetBookFromFile(int iCount);   // 查看图书的信息
+protected:
+	char m_cName[NUM1];
+	char m_clsbn[NUM1];
+	char m_cPrice[NUM2];
+	char m_cAuthor[NUM2];
+};
+eeeeeeeeeeee图书馆eeeeeeeeeeeeee
+#pragma once
+#define NUM1 128           //图书名称和Isbn编号最大长度
+#define NUM2 50           //图书价格及作者最大长度
+class CBook {
+public:
+	CBook(){}             //无参构造方法
+	CBook(char* cName, char* cIsbn, char* cPrice, char* cAuthor);//有参构造方法
+	~CBook(){}            //析构函数
+public:
+	char* GetName();//获取图书名称
+	void SetName(char* cName);//设置图书名称
+	char* GetIsbn();//获取图书ISBN编号
+	void SetIsbn(char* cIsbn);//设置图书ISBN编号
+	char* GetPrice();//获取图书价格
+	void SetPrice(char* cPrice);//设置图书价格
+	char* GetAuthor();//获取图书作者
+	void SetAuthor(char* cAuthor);//设置图书作者
+	void WriteData();             //写入数据
+	void DeleteData(int iCount);  //删除数据
+	void GetBookFromFile(int iCount);  //从文件中读取图书记录
+protected:
+	char m_cName[NUM1];
+	char m_cIsbn[NUM1];
+	char m_cPrice[NUM2];
+	char m_cAuthor[NUM2];
+}; 
+#include "Book.h"
+#include<string>
+#include<fstream>
+#include<iostream>
+#include<iomanip>
+ 
+using namespace std;
+ 
+ 
+CBook::CBook(char* cName, char* clsbn, char* cPrice, char* cAuthor)
+{
+	strncpy(m_cName, cName, NUM1);
+	strncpy(m_clsbn, clsbn, NUM1); 
+	strncpy(m_cPrice, cPrice, NUM2); 
+	strncpy(m_cAuthor, cAuthor, NUM2);
+	// 函数char* strncpy(char *dest, const char *src, size_t n) 
+	// strncpy把src所指向以'\0'结尾的字符串的前n个字符复制到dest所指的数组中，返回指向dest的指针。
+	// 当n>=sizeof(src)时，拷贝正确，并在dest字符串后面加入'\0';
+	// 当n<sizeof(src)时，只拷贝src前n-1个字符串到dest，不会为dest字符串后面加入'\0';
+}
+ 
+char* CBook::GetName()
+{
+	return m_cName;
+}
+ 
+void CBook::SetName(char* cName)
+{
+	strncpy(m_cName, cName, NUM1);
+}
+ 
+char* CBook::Getlsbn()
+{
+	return m_clsbn;
+}
+ 
+void CBook::Setlsbn(char* clsbn)
+{
+	strncpy(m_clsbn, clsbn, NUM1);
+}
+ 
+char* CBook::GetPrice()
+{
+	return m_cPrice;
+}
+ 
+void CBook::SetPrice(char* cPrice)
+{
+	strncpy(m_cPrice, cPrice, NUM2);
+}
+ 
+char* CBook::GetAuthor()
+{
+	return m_cAuthor;
+}	
+ 
+void CBook::SetAuthor(char* cAuthor)
+{
+	strncpy(m_cAuthor, cAuthor, NUM2);
+}
+ 
+ 
+ 
+// 函数WriteData、GetBookFromFile、DeleteData是类对象读写文件的函数，相当于操作数据库的接口。
+ 
+// 成员函数WriteData主要实现将图书对象写入到文件中。
+void CBook::WriteData()
+{
+	ofstream ofile;
+	// 创建一个输出文件流，但是这个文件流并未关联到任何文件
+	ofile.open("book.dat", ios::binary | ios::app); 
+	// 这两句代码定义了一个输出流ofile，流对象的open函数用来打开名为“book.dat”的文件，
+	// 并将文件与ofile绑定。第二个参数为ios::app（从文件末尾开始写）|ios::binary（二进制模式），
+	// 表示，以二进制模式打开文件，如果没有文件，那么生成空文件；如果有文件，那么在文件尾追加。 
+	// 注意，以ios::app方式打开文件，即使修改文件指针，也只能输出到文件尾。
+	// 实际上以ios::app打开的文件的写入，和文件指针无关。
+	// ios::ate和ios::app的关键区别，ios::app只能在尾部追加，ios::ate可以配合指针修改文件中的部分内容。
+ 
+	try
+	{
+		ofile.write(m_cName, NUM1);
+		ofile.write(m_clsbn, NUM1); 
+		ofile.write(m_cPrice, NUM2);
+		ofile.write(m_cAuthor, NUM2);
+		// 对二进制文件的读写主要用istream类的成员函数read和write来实现。
+		// 这两个成员函数的原型为：
+		// istream& read(char* buffer, int len);
+		// ostream& write(const char* buffer, int len);
+		// 字符指针buffer指向内存中一段存储空间。len是读写的字节数。调用的方式为：
+		// a.write(p1, 50);
+		// b.read(p2, 30);
+		// 上面第一行中的a是输出文件流对象，write函数将字符指针p1所给出的地址开始的50个字节的内容不加转换地写到磁盘文件中。
+		// 在第二行中，b是输入文件流对象，read函数从b所关联的磁盘文件中，读入30个字节(或遇EOF结束），存放在字符指针p2所指的一段空间内。
+ 
+	}
+	catch (...)
+	{
+		throw "file error occurred";
+		ofile.close();
+	}
+	ofile.close();
+}
+	
+ 
+// 成员函数GetBookFromFile能够实现从文件中读取数据来构建对象。
+void CBook::GetBookFromFile(int iCount)
+{
+	char cName[NUM1];
+	char clsbn[NUM1];
+	char cPrice[NUM2];
+	char cAuthor[NUM2];
+ 
+	ifstream ifile;
+	ifile.open("book.dat", ios::binary);
+	try
+	{
+		ifile.seekg(iCount*(NUM1 + NUM1 + NUM2 + NUM2), ios::beg);
+		ifile.read(cName, NUM1);
+		if (ifile.tellg() > 0)
+			strncpy(m_cName, cName, NUM1);
+		ifile.read(clsbn, NUM1);
+		if (ifile.tellg() > 0)
+			strncpy(m_clsbn, clsbn, NUM1);
+		ifile.read(cPrice, NUM2);
+		if (ifile.tellg() > 0)
+			strncpy(m_cPrice, cPrice, NUM2);
+		ifile.read(cAuthor, NUM2);
+		if (ifile.tellg() > 0)
+			strncpy(m_cAuthor, cAuthor, NUM2);
+	}
+	catch (...)
+	{
+		throw "file error occurred";
+		ifile.close();
+	}
+	ifile.close();
+}
+ 
+ 
+ 
+ 
+// 成员函数DeleteData负责将图书信息从文件中删除。
+void CBook::DeleteData(int iCount)
+{
+	long respos;                 // 变量respos用来记录当前文件中文本的长度
+	int iDataCount = 0;          // 变量iDataCount用来记录当前文件中储存的图书数目
+ 
+	fstream file;
+	fstream tmpfile;
+	ofstream ofile;
+	// 创建了两个输入输出文件流，一个输出文件流
+ 
+	char cTempBuf[NUM1 + NUM1 + NUM2 + NUM2];
+	// 创建一个数组，其空间大小刚好容纳一本图书的信息
+ 
+	file.open("book.dat", ios::binary | ios::in | ios::out);
+	// open函数的第二个参数定义了文件的打开模式，读写二进制文件时，
+	//  打开方式中必须指定ios::binary，否则读写会出错，此外还有另外两个模式：
+	//	ios::in 读
+	//	ios::out 写
+ 
+	tmpfile.open("temp.dat", ios::binary | ios::in | ios::out | ios::trunc);
+	//  ios::trunc	打开一个文件，然后清空内容
+ 
+	file.seekg(0, ios::end);
+	respos =  file.tellg();
+	// 通过将文件指针设置在文件末尾，返回文件末尾到文首的偏移字节数，
+	// 于是得到文件的大小，即字节数
+ 
+	iDataCount = respos / (NUM1 + NUM1 + NUM2 + NUM2);
+	// 一本图书的信息在文件中占据NUM1 + NUM1 + NUM2 + NUM2个字节
+	// 用 文件的总字节数/每本图书所占的字节数 来获得文件中的图书数目
+ 
+	if (iCount < 0 || iCount > iDataCount)
+	{
+		throw "Input number error";
+	}
+	else
+	{
+		// file.seekg((iCount-1)*(NUM1 + NUM1 + NUM2 + NUM2), ios::beg);
+		// 将文件指针定位来要查找的图书的首地址处
+ 
+		file.seekg(0, ios::beg);
+ 
+		for (int j = 1; j <= iDataCount; j++)
+		{
+			if (j == iCount)
+			{
+				file.seekg((iCount)*(NUM1 + NUM1 + NUM2 + NUM2), ios::beg);
+			}
+			if (!file.eof())
+			{
+				memset(cTempBuf, 0, NUM1 + NUM1 + NUM2 + NUM2);
+				// 用NUM1 + NUM1 + NUM2 + NUM2个字节的0来填充数组cTempBuf
+ 
+				file.read(cTempBuf, NUM1 + NUM1 + NUM2 + NUM2);
+				// 从file所绑定的文件的文件指针处向后读取NUM1 + NUM1 + NUM2 + NUM2个字节的内容
+				// 将内容保存在数组cTempBuf中。
+ 
+				tmpfile.write(cTempBuf, NUM1 + NUM1 + NUM2 + NUM2);
+				// 将数组cTempBuf中的相应字节数的内容写入到tmpfile所绑定的磁盘文件中
+			}
+		}
+		file.close();
+ 
+		tmpfile.seekg(0, ios::beg);
+		// 将tmpfile所绑定的文件的文件指针定位到文件首端
+ 
+		ofile.open("book.dat");
+		// 打开名为"book.dat"的文件，并将文件与ofile绑定，它被用来向文件写入数据
+		// ofile.seekp((iCount - 1)*(NUM1 + NUM1 + NUM2 + NUM2), ios::beg);
+ 
+		ofile.seekp(0, ios::beg);
+		// seekp：设置输出文件流的文件流指针位置
+ 
+		for (int i = 1; i <= iDataCount; i++)
+		{
+			if (!ofile.eof())
+			{
+				memset(cTempBuf, 0, NUM1 + NUM1 + NUM2 + NUM2);
+				tmpfile.read(cTempBuf, NUM1 + NUM1 + NUM2 + NUM2);
+				ofile.write(cTempBuf, NUM1 + NUM1 + NUM2 + NUM2);
+			}
+		}	
+	}
+	tmpfile.close();
+	ofile.close();
+	remove("temp.dat");
+}
+ 
